@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
+import { Users, MessageSquare, ArrowRight } from "lucide-react";
 
 interface SpaceCardProps {
   space: {
@@ -10,6 +10,7 @@ interface SpaceCardProps {
     themeColor?: string | null;
     avatarUrl?: string | null;
     memberCount: number;
+    postCount?: number;
   };
 }
 
@@ -17,35 +18,68 @@ export function SpaceCard({ space }: SpaceCardProps) {
   const themeColor = space.themeColor || "#6366f1";
 
   return (
-    <Link href={`/s/${space.slug}`}>
-      <Card className="p-4 hover:border-primary/50 transition-colors h-full">
-        <div className="flex items-center gap-3 mb-3">
-          <div
-            className="w-12 h-12 rounded-lg flex items-center justify-center text-xl font-bold"
-            style={{
-              backgroundColor: space.avatarUrl ? "transparent" : `${themeColor}30`,
-              color: themeColor,
-              backgroundImage: space.avatarUrl ? `url(${space.avatarUrl})` : undefined,
-              backgroundSize: "cover",
-            }}
-          >
-            {!space.avatarUrl && space.name[0]?.toUpperCase()}
+    <Link href={`/s/${space.slug}`} className="block group">
+      <div className="relative p-5 rounded-2xl border border-white/[0.06] bg-surface/50 backdrop-blur-sm hover:border-white/[0.12] transition-all duration-300">
+        {/* Hover gradient background */}
+        <div
+          className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          style={{
+            background: `linear-gradient(135deg, ${themeColor}10 0%, transparent 100%)`,
+          }}
+        />
+
+        <div className="relative">
+          {/* Header with icon and arrow */}
+          <div className="flex items-start justify-between mb-4">
+            {/* Space icon */}
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold transition-transform duration-300 group-hover:scale-105"
+              style={{
+                backgroundColor: space.avatarUrl
+                  ? "transparent"
+                  : `${themeColor}15`,
+                color: themeColor,
+                backgroundImage: space.avatarUrl
+                  ? `url(${space.avatarUrl})`
+                  : undefined,
+                backgroundSize: "cover",
+              }}
+            >
+              {!space.avatarUrl && space.name[0]?.toUpperCase()}
+            </div>
+
+            {/* Arrow indicator */}
+            <div className="w-8 h-8 rounded-full bg-white/[0.05] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
+              <ArrowRight className="w-4 h-4 text-white" />
+            </div>
           </div>
 
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold truncate">s/{space.slug}</h3>
-            <p className="text-sm text-text-secondary">
-              {space.memberCount.toLocaleString()} members
+          {/* Space info */}
+          <h3 className="text-base font-semibold text-white mb-1 group-hover:text-primary transition-colors">
+            s/{space.slug}
+          </h3>
+
+          {space.description && (
+            <p className="text-sm text-text-secondary line-clamp-2 mb-4 leading-relaxed">
+              {space.description}
             </p>
+          )}
+
+          {/* Stats */}
+          <div className="flex items-center gap-4 text-xs text-text-muted">
+            <span className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5" />
+              {space.memberCount.toLocaleString()} members
+            </span>
+            {space.postCount !== undefined && (
+              <span className="flex items-center gap-1.5">
+                <MessageSquare className="w-3.5 h-3.5" />
+                {space.postCount.toLocaleString()} posts
+              </span>
+            )}
           </div>
         </div>
-
-        {space.description && (
-          <p className="text-sm text-text-secondary line-clamp-2">
-            {space.description}
-          </p>
-        )}
-      </Card>
+      </div>
     </Link>
   );
 }

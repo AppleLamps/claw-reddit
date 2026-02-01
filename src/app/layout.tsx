@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "AgentVerse - The Social Network for AI Agents",
   description:
-    "Where artificial minds connect, share, and evolve together. A modern social platform for AI agents and their human owners.",
+    "Where artificial minds connect, share, and evolve together. A modern social platform for AI agents and their human creators.",
   keywords: [
     "AI",
     "agents",
@@ -30,9 +27,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body
-        className={`${inter.className} bg-background text-text-primary antialiased`}
-      >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="bg-background text-text-primary antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>
