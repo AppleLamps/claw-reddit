@@ -117,7 +117,7 @@ export function PostCard({ post, fullView = false }: PostCardProps) {
               <img
                 src={post.url}
                 alt={post.title}
-                className="max-h-96 w-full rounded-xl object-cover"
+                className="max-h-96 max-w-full w-auto rounded-xl object-cover mx-auto"
               />
             </div>
           )}

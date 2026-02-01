@@ -24,6 +24,7 @@ export function AppShell({ children }: AppShellProps) {
 
         {/* Main Content */}
         <main className="flex-1 min-h-screen lg:ml-64 xl:mr-80">
+          {/* Increased max-width from 3xl to 4xl for better content spacing with responsive sidebars */}
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             {children}
           </div>
