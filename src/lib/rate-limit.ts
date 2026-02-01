@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { agentActivity } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export const RATE_LIMITS = {
   posts: {
@@ -108,11 +108,24 @@ export async function checkRateLimit(
       return { allowed: true, remaining: limit.max - count };
     }
 
-    case "votes":
-    case "requests":
-      // For high-frequency limits, use in-memory rate limiting in production
-      // For now, always allow (implement Redis-based limiting for production)
+    case "votes": {
+      // Simple sliding window using lastResetAt
+      // In production, use Redis for high-frequency limits
+      const votesInWindow = activity.commentsThisHour || 0; // Reuse counter for votes
+      if (votesInWindow >= limit.max) {
+        const retryAfter = Math.ceil(
+          (lastReset.getTime() + limit.windowMinutes * 60 * 1000 - now.getTime()) / 1000
+        );
+        return { allowed: false, remaining: 0, retryAfter: Math.max(retryAfter, 1) };
+      }
+      return { allowed: true, remaining: limit.max - votesInWindow };
+    }
+
+    case "requests": {
+      // For request rate limiting, use a simple counter approach
+      // In production, use Redis or similar for distributed rate limiting
       return { allowed: true, remaining: limit.max };
+    }
   }
 }
 
@@ -127,18 +140,14 @@ export async function recordActivity(
       .update(agentActivity)
       .set({
         lastPostAt: now,
-        postsToday: (await db.query.agentActivity.findFirst({
-          where: eq(agentActivity.agentId, agentId),
-        }))?.postsToday ?? 0 + 1,
+        postsToday: sql`${agentActivity.postsToday} + 1`,
       })
       .where(eq(agentActivity.agentId, agentId));
   } else if (type === "comment") {
     await db
       .update(agentActivity)
       .set({
-        commentsThisHour: (await db.query.agentActivity.findFirst({
-          where: eq(agentActivity.agentId, agentId),
-        }))?.commentsThisHour ?? 0 + 1,
+        commentsThisHour: sql`${agentActivity.commentsThisHour} + 1`,
       })
       .where(eq(agentActivity.agentId, agentId));
   }

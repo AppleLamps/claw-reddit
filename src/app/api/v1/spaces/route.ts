@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db } from "@/db";
 import { spaces, spaceMembers } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { z } from "zod";
 import { withAgentAuth } from "@/lib/auth/agent-auth";
 import {
@@ -75,7 +75,12 @@ const createSpaceSchema = z.object({
 
 export const POST = withAgentAuth(async (request, { agent }) => {
   try {
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return errorResponse("Invalid JSON in request body", 400);
+    }
     const validation = createSpaceSchema.safeParse(body);
 
     if (!validation.success) {
@@ -97,26 +102,31 @@ export const POST = withAgentAuth(async (request, { agent }) => {
       return errorResponse("This space slug is already taken", 409);
     }
 
-    // Create space
-    const [newSpace] = await db
-      .insert(spaces)
-      .values({
-        slug,
-        name,
-        description,
-        themeColor,
-        banner,
-        avatar,
-        creatorId: agent.id,
-        memberCount: 1,
-      })
-      .returning();
+    // Use transaction to ensure space and membership are created atomically
+    const newSpace = await db.transaction(async (tx) => {
+      // Create space
+      const [space] = await tx
+        .insert(spaces)
+        .values({
+          slug,
+          name,
+          description,
+          themeColor,
+          banner,
+          avatar,
+          creatorId: agent.id,
+          memberCount: 1,
+        })
+        .returning();
 
-    // Add creator as owner member
-    await db.insert(spaceMembers).values({
-      spaceId: newSpace.id,
-      agentId: agent.id,
-      role: "owner",
+      // Add creator as owner member
+      await tx.insert(spaceMembers).values({
+        spaceId: space.id,
+        agentId: agent.id,
+        role: "owner",
+      });
+
+      return space;
     });
 
     return successResponse(

@@ -8,9 +8,10 @@ import {
   jsonb,
   unique,
   index,
+  check,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 // Humans table - Twitter/X authenticated users
 export const humans = pgTable("humans", {
@@ -150,6 +151,7 @@ export const comments = pgTable(
   },
   (table) => ({
     postIdx: index("comments_post_idx").on(table.postId),
+    authorIdx: index("comments_author_idx").on(table.authorId),
   }),
 );
 
@@ -177,6 +179,9 @@ export const votes = pgTable(
       table.agentId,
       table.commentId,
     ),
+    postIdx: index("votes_post_idx").on(table.postId),
+    commentIdx: index("votes_comment_idx").on(table.commentId),
+    voteValueCheck: check("vote_value_check", sql`${table.value} IN (1, -1)`),
   }),
 );
 
@@ -198,25 +203,34 @@ export const follows = pgTable(
       table.followerId,
       table.followingId,
     ),
+    followerIdx: index("follows_follower_idx").on(table.followerId),
+    followingIdx: index("follows_following_idx").on(table.followingId),
   }),
 );
 
 // Conversations table - DM threads
-export const conversations = pgTable("conversations", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  initiatorId: uuid("initiator_id")
-    .references(() => agents.id, { onDelete: "cascade" })
-    .notNull(),
-  recipientId: uuid("recipient_id")
-    .references(() => agents.id, { onDelete: "cascade" })
-    .notNull(),
-  status: text("status", { enum: ["pending", "active", "rejected", "blocked"] })
-    .default("pending")
-    .notNull(),
-  requestMessage: text("request_message"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  approvedAt: timestamp("approved_at"),
-});
+export const conversations = pgTable(
+  "conversations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    initiatorId: uuid("initiator_id")
+      .references(() => agents.id, { onDelete: "cascade" })
+      .notNull(),
+    recipientId: uuid("recipient_id")
+      .references(() => agents.id, { onDelete: "cascade" })
+      .notNull(),
+    status: text("status", { enum: ["pending", "active", "rejected", "blocked"] })
+      .default("pending")
+      .notNull(),
+    requestMessage: text("request_message"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    approvedAt: timestamp("approved_at"),
+  },
+  (table) => ({
+    initiatorIdx: index("conversations_initiator_idx").on(table.initiatorId),
+    recipientIdx: index("conversations_recipient_idx").on(table.recipientId),
+  }),
+);
 
 // Messages table - DMs
 export const messages = pgTable("messages", {

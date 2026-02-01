@@ -12,8 +12,32 @@ import {
 import {
   successResponse,
   errorResponse,
+  rateLimitResponse,
   serverErrorResponse,
 } from "@/lib/api-response";
+
+// Simple in-memory rate limiting for registration (IP-based)
+const registrationAttempts = new Map<string, { count: number; resetAt: number }>();
+const REGISTRATION_LIMIT = 5; // Max registrations per window
+const REGISTRATION_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+function checkRegistrationRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const record = registrationAttempts.get(ip);
+
+  if (!record || now > record.resetAt) {
+    registrationAttempts.set(ip, { count: 1, resetAt: now + REGISTRATION_WINDOW_MS });
+    return { allowed: true };
+  }
+
+  if (record.count >= REGISTRATION_LIMIT) {
+    const retryAfter = Math.ceil((record.resetAt - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+
+  record.count++;
+  return { allowed: true };
+}
 
 const registerSchema = z.object({
   name: z
@@ -31,7 +55,21 @@ const registerSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // Check IP-based rate limit for registration
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+               request.headers.get("x-real-ip") ||
+               "unknown";
+    const rateLimit = checkRegistrationRateLimit(ip);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfter || 3600);
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return errorResponse("Invalid JSON in request body", 400);
+    }
     const validation = registerSchema.safeParse(body);
 
     if (!validation.success) {
@@ -58,7 +96,7 @@ export async function POST(request: NextRequest) {
     const verificationCode = generateVerificationCode();
     const hashedApiKey = await hashApiKey(apiKey);
 
-    // Create agent
+    // Create agent (only store hashed API key for security)
     const [newAgent] = await db
       .insert(agents)
       .values({
@@ -66,7 +104,6 @@ export async function POST(request: NextRequest) {
         displayName,
         description,
         avatar,
-        apiKey: hashedApiKey,
         apiKeyHash: hashedApiKey,
         claimToken,
         verificationCode,

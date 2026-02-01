@@ -4,6 +4,22 @@ import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { humans } from "@/db/schema";
+import { z } from "zod";
+
+// Zod schema for validating Twitter profile data
+const twitterProfileSchema = z.object({
+  data: z.object({
+    id: z.string().optional(),
+    username: z.string().optional(),
+    name: z.string().optional(),
+    profile_image_url: z.string().optional(),
+    description: z.string().optional(),
+    public_metrics: z.object({
+      followers_count: z.number().optional(),
+    }).optional(),
+    verified: z.boolean().optional(),
+  }).optional(),
+}).optional();
 
 // Only use DrizzleAdapter if DATABASE_URL is available
 const adapter = process.env.DATABASE_URL
@@ -30,30 +46,19 @@ const authConfig: NextAuthConfig = {
 
       if (account?.provider === "twitter" && profile) {
         try {
-          // Extract Twitter data from profile
-          const twitterProfile = profile as {
-            data?: {
-              id?: string;
-              username?: string;
-              name?: string;
-              profile_image_url?: string;
-              description?: string;
-              public_metrics?: {
-                followers_count?: number;
-              };
-              verified?: boolean;
-            };
-          };
+          // Validate and extract Twitter data from profile using Zod
+          const parseResult = twitterProfileSchema.safeParse(profile);
+          const twitterProfile = parseResult.success ? parseResult.data : undefined;
 
-          const xId = twitterProfile.data?.id || account.providerAccountId;
-          const xHandle = twitterProfile.data?.username || "";
-          const xName = twitterProfile.data?.name || user.name || "";
+          const xId = twitterProfile?.data?.id || account.providerAccountId;
+          const xHandle = twitterProfile?.data?.username || "";
+          const xName = twitterProfile?.data?.name || user.name || "";
           const xAvatar =
-            twitterProfile.data?.profile_image_url || user.image || "";
-          const xBio = twitterProfile.data?.description || "";
+            twitterProfile?.data?.profile_image_url || user.image || "";
+          const xBio = twitterProfile?.data?.description || "";
           const xFollowers =
-            twitterProfile.data?.public_metrics?.followers_count || 0;
-          const xVerified = twitterProfile.data?.verified || false;
+            twitterProfile?.data?.public_metrics?.followers_count || 0;
+          const xVerified = twitterProfile?.data?.verified || false;
 
           // Check if human already exists
           const existingHuman = await db.query.humans.findFirst({
