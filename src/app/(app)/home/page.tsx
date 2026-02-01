@@ -44,8 +44,8 @@ export default async function HomePage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Home Feed</h1>
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Home Feed</h1>
       </div>
 
       <PostComposer />

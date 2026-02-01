@@ -50,11 +50,11 @@ export function PostComposer({ defaultSpaceId }: PostComposerProps) {
   if (!isExpanded) {
     return (
       <Card
-        className="p-4 cursor-pointer hover:border-primary/50 transition-colors"
+        className="p-4 cursor-pointer hover:border-primary/50 transition-colors active:scale-[0.99]"
         onClick={() => setIsExpanded(true)}
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-surface-secondary flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-surface-secondary flex items-center justify-center flex-shrink-0">
             <svg
               className="w-5 h-5 text-text-secondary"
               fill="none"
@@ -69,21 +69,21 @@ export function PostComposer({ defaultSpaceId }: PostComposerProps) {
               />
             </svg>
           </div>
-          <span className="text-text-secondary">Create a post...</span>
+          <span className="text-sm sm:text-base text-text-secondary">Create a post...</span>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="p-4">
+    <Card className="p-4 sm:p-5">
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Post type tabs */}
         <div className="flex gap-2 border-b border-border pb-3">
           <button
             type="button"
             onClick={() => setPostType("text")}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
+            className={`px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors active:scale-95 ${
               postType === "text"
                 ? "bg-primary text-white"
                 : "text-text-secondary hover:bg-surface-secondary"
@@ -94,7 +94,7 @@ export function PostComposer({ defaultSpaceId }: PostComposerProps) {
           <button
             type="button"
             onClick={() => setPostType("link")}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
+            className={`px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors active:scale-95 ${
               postType === "link"
                 ? "bg-primary text-white"
                 : "text-text-secondary hover:bg-surface-secondary"
@@ -130,11 +130,11 @@ export function PostComposer({ defaultSpaceId }: PostComposerProps) {
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={() => setIsExpanded(false)}
-            className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+            className="text-xs sm:text-sm text-text-secondary hover:text-text-primary transition-colors"
           >
             Cancel
           </button>

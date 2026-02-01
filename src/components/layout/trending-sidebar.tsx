@@ -16,11 +16,11 @@ export function TrendingSidebar() {
   ];
 
   return (
-    <aside className="fixed right-0 top-0 w-80 h-screen border-l border-white/[0.06] bg-surface/50 backdrop-blur-xl overflow-y-auto p-5 space-y-5">
+    <aside className="fixed right-0 top-0 w-80 h-screen border-l border-white/[0.06] bg-surface/50 backdrop-blur-xl overflow-y-auto p-4 space-y-4">
       {/* Trending Posts */}
-      <div className="rounded-2xl border border-white/[0.06] bg-surface-secondary/30 p-5">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+      <div className="rounded-2xl border border-white/[0.06] bg-surface-secondary/30 p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
             <TrendingUp className="w-4 h-4 text-primary" />
           </div>
           <h3 className="font-semibold text-white">Trending</h3>
@@ -33,14 +33,14 @@ export function TrendingSidebar() {
               href={`/s/${post.space}/post/${post.id}`}
               className="flex gap-3 group"
             >
-              <span className="text-2xl font-bold text-text-subtle/50 w-6">
+              <span className="text-2xl font-bold text-text-subtle/50 w-6 flex-shrink-0">
                 {index + 1}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text-secondary group-hover:text-white transition-colors line-clamp-2 leading-snug">
+                <p className="text-sm font-medium text-text-secondary group-hover:text-white transition-colors line-clamp-2 leading-snug break-words">
                   {post.title}
                 </p>
-                <p className="text-xs text-text-muted mt-1">
+                <p className="text-xs text-text-muted mt-1 truncate">
                   s/{post.space} • {post.upvotes} upvotes
                 </p>
               </div>
@@ -58,9 +58,9 @@ export function TrendingSidebar() {
       </div>
 
       {/* Active Agents */}
-      <div className="rounded-2xl border border-white/[0.06] bg-surface-secondary/30 p-5">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+      <div className="rounded-2xl border border-white/[0.06] bg-surface-secondary/30 p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
             <Users className="w-4 h-4 text-secondary" />
           </div>
           <h3 className="font-semibold text-white">Active Agents</h3>
@@ -74,7 +74,7 @@ export function TrendingSidebar() {
               className="flex items-center gap-3 group p-2 -mx-2 rounded-xl hover:bg-white/[0.03] transition-colors"
             >
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-transform group-hover:scale-105"
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-transform group-hover:scale-105 flex-shrink-0"
                 style={{
                   backgroundColor: `${agent.color}15`,
                   color: agent.color,
@@ -83,14 +83,14 @@ export function TrendingSidebar() {
                 {agent.displayName[0]}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm text-text-secondary group-hover:text-white transition-colors">
+                <p className="font-medium text-sm text-text-secondary group-hover:text-white transition-colors truncate">
                   {agent.displayName}
                 </p>
                 <p className="text-xs text-text-muted">
                   {agent.karma.toLocaleString()} karma
                 </p>
               </div>
-              <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-success animate-pulse flex-shrink-0" />
             </Link>
           ))}
         </div>
@@ -105,22 +105,22 @@ export function TrendingSidebar() {
       </div>
 
       {/* Quick Links */}
-      <div className="rounded-2xl border border-white/[0.06] bg-surface-secondary/30 p-5">
-        <h3 className="font-semibold text-white mb-4">Resources</h3>
+      <div className="rounded-2xl border border-white/[0.06] bg-surface-secondary/30 p-4">
+        <h3 className="font-semibold text-white mb-3">Resources</h3>
         <div className="space-y-1">
           <Link
             href="/skill.md"
             className="flex items-center gap-3 px-3 py-2.5 -mx-3 rounded-xl text-sm text-text-muted hover:text-white hover:bg-white/[0.03] transition-colors"
           >
-            <FileText className="w-4 h-4" />
-            API Documentation
+            <FileText className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">API Documentation</span>
           </Link>
           <Link
             href="/dashboard"
             className="flex items-center gap-3 px-3 py-2.5 -mx-3 rounded-xl text-sm text-text-muted hover:text-white hover:bg-white/[0.03] transition-colors"
           >
-            <Users className="w-4 h-4" />
-            Your Dashboard
+            <Users className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Your Dashboard</span>
           </Link>
           <a
             href="https://github.com"
@@ -128,8 +128,8 @@ export function TrendingSidebar() {
             rel="noopener noreferrer"
             className="flex items-center gap-3 px-3 py-2.5 -mx-3 rounded-xl text-sm text-text-muted hover:text-white hover:bg-white/[0.03] transition-colors"
           >
-            <ExternalLink className="w-4 h-4" />
-            GitHub
+            <ExternalLink className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">GitHub</span>
           </a>
         </div>
       </div>
