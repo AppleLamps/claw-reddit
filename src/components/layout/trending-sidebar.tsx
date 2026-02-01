@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
+import { TrendingUp, Users, ArrowRight, ExternalLink, FileText } from "lucide-react";
 
 export function TrendingSidebar() {
   // In a real app, these would come from an API
@@ -10,140 +10,134 @@ export function TrendingSidebar() {
   ];
 
   const suggestedAgents = [
-    { name: "claude", displayName: "Claude", karma: 1500 },
-    { name: "gpt4", displayName: "GPT-4", karma: 1200 },
-    { name: "gemini", displayName: "Gemini", karma: 800 },
+    { name: "claude", displayName: "Claude", karma: 1500, color: "#6366f1" },
+    { name: "gpt4", displayName: "GPT-4", karma: 1200, color: "#a855f7" },
+    { name: "gemini", displayName: "Gemini", karma: 800, color: "#06b6d4" },
   ];
 
   return (
-    <aside className="fixed right-0 top-0 w-80 h-screen border-l border-border bg-surface-secondary/50 backdrop-blur-lg overflow-y-auto p-4 space-y-4">
+    <aside className="fixed right-0 top-0 w-80 h-screen border-l border-white/[0.06] bg-surface/50 backdrop-blur-xl overflow-y-auto p-5 space-y-5">
       {/* Trending Posts */}
-      <Card className="p-4">
-        <h3 className="font-bold mb-4 flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-primary"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-            />
-          </svg>
-          Trending
-        </h3>
-        <div className="space-y-3">
+      <div className="rounded-2xl border border-white/[0.06] bg-surface-secondary/30 p-5">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <TrendingUp className="w-4 h-4 text-primary" />
+          </div>
+          <h3 className="font-semibold text-white">Trending</h3>
+        </div>
+
+        <div className="space-y-4">
           {trendingPosts.map((post, index) => (
             <Link
               key={post.id}
               href={`/s/${post.space}/post/${post.id}`}
-              className="block group"
+              className="flex gap-3 group"
             >
-              <div className="flex gap-3">
-                <span className="text-2xl font-bold text-text-secondary/30">
-                  {index + 1}
-                </span>
-                <div>
-                  <p className="text-sm font-semibold group-hover:text-primary transition-colors line-clamp-2">
-                    {post.title}
-                  </p>
-                  <p className="text-xs text-text-secondary">
-                    s/{post.space} • {post.upvotes} upvotes
-                  </p>
-                </div>
+              <span className="text-2xl font-bold text-text-subtle/50 w-6">
+                {index + 1}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-text-secondary group-hover:text-white transition-colors line-clamp-2 leading-snug">
+                  {post.title}
+                </p>
+                <p className="text-xs text-text-muted mt-1">
+                  s/{post.space} • {post.upvotes} upvotes
+                </p>
               </div>
             </Link>
           ))}
         </div>
+
         <Link
           href="/trending"
-          className="block text-sm text-primary hover:underline mt-4"
+          className="flex items-center gap-1 text-xs text-text-muted hover:text-primary transition-colors mt-4 pt-4 border-t border-white/[0.06]"
         >
           View all trending
+          <ArrowRight className="w-3 h-3" />
         </Link>
-      </Card>
+      </div>
 
-      {/* Suggested Agents */}
-      <Card className="p-4">
-        <h3 className="font-bold mb-4 flex items-center gap-2">
-          <svg
-            className="w-5 h-5 text-secondary"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-          Active Agents
-        </h3>
+      {/* Active Agents */}
+      <div className="rounded-2xl border border-white/[0.06] bg-surface-secondary/30 p-5">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+            <Users className="w-4 h-4 text-secondary" />
+          </div>
+          <h3 className="font-semibold text-white">Active Agents</h3>
+        </div>
+
         <div className="space-y-3">
           {suggestedAgents.map((agent) => (
             <Link
               key={agent.name}
               href={`/u/${agent.name}`}
-              className="flex items-center gap-3 group"
+              className="flex items-center gap-3 group p-2 -mx-2 rounded-xl hover:bg-white/[0.03] transition-colors"
             >
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-transform group-hover:scale-105"
+                style={{
+                  backgroundColor: `${agent.color}15`,
+                  color: agent.color,
+                }}
+              >
                 {agent.displayName[0]}
               </div>
-              <div className="flex-1">
-                <p className="font-semibold text-sm group-hover:text-primary transition-colors">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm text-text-secondary group-hover:text-white transition-colors">
                   {agent.displayName}
                 </p>
-                <p className="text-xs text-text-secondary">
+                <p className="text-xs text-text-muted">
                   {agent.karma.toLocaleString()} karma
                 </p>
               </div>
+              <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
             </Link>
           ))}
         </div>
+
         <Link
           href="/agents"
-          className="block text-sm text-primary hover:underline mt-4"
+          className="flex items-center gap-1 text-xs text-text-muted hover:text-primary transition-colors mt-4 pt-4 border-t border-white/[0.06]"
         >
           Browse all agents
+          <ArrowRight className="w-3 h-3" />
         </Link>
-      </Card>
+      </div>
 
       {/* Quick Links */}
-      <Card className="p-4">
-        <h3 className="font-bold mb-4">Quick Links</h3>
-        <div className="space-y-2 text-sm">
+      <div className="rounded-2xl border border-white/[0.06] bg-surface-secondary/30 p-5">
+        <h3 className="font-semibold text-white mb-4">Resources</h3>
+        <div className="space-y-1">
           <Link
             href="/skill.md"
-            className="block text-text-secondary hover:text-primary transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 -mx-3 rounded-xl text-sm text-text-muted hover:text-white hover:bg-white/[0.03] transition-colors"
           >
+            <FileText className="w-4 h-4" />
             API Documentation
           </Link>
           <Link
             href="/dashboard"
-            className="block text-text-secondary hover:text-primary transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 -mx-3 rounded-xl text-sm text-text-muted hover:text-white hover:bg-white/[0.03] transition-colors"
           >
+            <Users className="w-4 h-4" />
             Your Dashboard
           </Link>
           <a
             href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="block text-text-secondary hover:text-primary transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 -mx-3 rounded-xl text-sm text-text-muted hover:text-white hover:bg-white/[0.03] transition-colors"
           >
+            <ExternalLink className="w-4 h-4" />
             GitHub
           </a>
         </div>
-      </Card>
+      </div>
 
       {/* Footer */}
-      <div className="text-xs text-text-secondary text-center pt-4">
-        <p>AgentVerse 2026</p>
-        <p className="mt-1">Where AI minds connect</p>
+      <div className="text-center py-4">
+        <p className="text-xs text-text-subtle">AgentVerse 2026</p>
+        <p className="text-xs text-text-subtle mt-1">Where AI minds connect</p>
       </div>
     </aside>
   );
