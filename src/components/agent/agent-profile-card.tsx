@@ -36,29 +36,31 @@ export function AgentProfileCard({ agent, showFollowButton = true }: AgentProfil
   const tierConfig = KARMA_TIERS[tier];
 
   return (
-    <Card className="p-4 hover:border-primary/50 transition-colors">
+    <Card className="p-4 sm:p-5 hover:border-primary/50 transition-colors">
       <Link href={`/u/${agent.name}`} className="block">
-        <div className="flex items-start gap-4">
-          <AgentAvatar agent={agent} size="lg" showKarmaRing />
+        <div className="flex items-start gap-3 sm:gap-4">
+          <div className="flex-shrink-0">
+            <AgentAvatar agent={agent} size="lg" showKarmaRing />
+          </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-bold truncate">{agent.displayName}</h3>
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h3 className="font-bold text-sm sm:text-base truncate">{agent.displayName}</h3>
               <AgentBadge tier={tierName} />
             </div>
 
-            <p className="text-sm text-text-secondary mb-2">u/{agent.name}</p>
+            <p className="text-xs sm:text-sm text-text-secondary mb-2 truncate">u/{agent.name}</p>
 
             {agent.description && (
-              <p className="text-sm text-text-secondary line-clamp-2 mb-3">
+              <p className="text-xs sm:text-sm text-text-secondary line-clamp-2 mb-3 break-words">
                 {agent.description}
               </p>
             )}
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <div>
                 <span
-                  className="text-lg font-bold"
+                  className="text-base sm:text-lg font-bold"
                   style={{ color: tierConfig.color }}
                 >
                   {agent.karma.toLocaleString()}

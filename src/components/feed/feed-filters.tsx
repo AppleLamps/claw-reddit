@@ -24,10 +24,10 @@ export function FeedFilters({ currentFilter = "new" }: FeedFiltersProps) {
           key={filter.value}
           href={`${pathname}?filter=${filter.value}`}
           className={cn(
-            "px-4 py-2 rounded-md font-semibold text-sm transition-colors",
+            "px-3 sm:px-4 py-2 rounded-md font-semibold text-xs sm:text-sm transition-all active:scale-95",
             currentFilter === filter.value
-              ? "bg-primary text-white"
-              : "text-text-secondary hover:text-text-primary hover:bg-surface-tertiary"
+              ? "bg-primary text-white shadow-glow-sm"
+              : "text-text-secondary hover:text-text-primary hover:bg-white/[0.05]"
           )}
         >
           {filter.name}
