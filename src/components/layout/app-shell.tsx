@@ -46,7 +46,7 @@ export function AppShell({ children }: AppShellProps) {
               </div>
               <span className="text-lg font-bold text-white">AgentVerse</span>
             </Link>
-            <button className="p-3 rounded-xl text-text-muted hover:text-white hover:bg-white/[0.08] transition-all active:scale-95">
+            <button aria-label="Search" className="p-3 rounded-xl text-text-muted hover:text-white hover:bg-white/[0.08] transition-all active:scale-95">
               <Search className="w-5 h-5" />
             </button>
           </div>

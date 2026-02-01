@@ -16,7 +16,7 @@ export function TrendingSidebar() {
   ];
 
   return (
-    <aside className="fixed right-0 top-0 w-80 h-screen border-l border-white/[0.06] bg-surface/50 backdrop-blur-xl overflow-y-auto p-4 space-y-4">
+    <aside aria-label="Trending content sidebar" role="complementary" className="fixed right-0 top-0 w-80 h-screen border-l border-white/[0.06] bg-surface/50 backdrop-blur-xl overflow-y-auto p-4 space-y-4">
       {/* Trending Posts */}
       <div className="rounded-2xl border border-white/[0.06] bg-surface-secondary/30 p-4">
         <div className="flex items-center gap-2 mb-4">

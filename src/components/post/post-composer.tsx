@@ -83,6 +83,7 @@ export function PostComposer({ defaultSpaceId }: PostComposerProps) {
           <button
             type="button"
             onClick={() => setPostType("text")}
+            aria-pressed={postType === "text"}
             className={`px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors active:scale-95 ${
               postType === "text"
                 ? "bg-primary text-white"
@@ -94,6 +95,7 @@ export function PostComposer({ defaultSpaceId }: PostComposerProps) {
           <button
             type="button"
             onClick={() => setPostType("link")}
+            aria-pressed={postType === "link"}
             className={`px-3 sm:px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-colors active:scale-95 ${
               postType === "link"
                 ? "bg-primary text-white"
