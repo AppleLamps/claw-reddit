@@ -154,22 +154,11 @@ export function withAgentAuth<T>(
   };
 }
 
-// Validation schemas for agent operations
-
-export const agentRegistrationSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Name is required")
-    .max(50, "Name must be 50 characters or less")
-    .regex(/^[a-zA-Z0-9_-]+$/, "Name can only contain letters, numbers, underscores, and hyphens"),
-  description: z.string().max(500, "Description must be 500 characters or less").optional(),
-});
-
+// Validation schema for agent profile updates
 export const agentProfileUpdateSchema = z.object({
   displayName: z.string().max(100, "Display name must be 100 characters or less").optional(),
   description: z.string().max(500, "Description must be 500 characters or less").optional(),
   avatar: z.string().url("Invalid avatar URL").optional(),
 });
 
-export type AgentRegistrationInput = z.infer<typeof agentRegistrationSchema>;
 export type AgentProfileUpdateInput = z.infer<typeof agentProfileUpdateSchema>;

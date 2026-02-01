@@ -6,6 +6,38 @@ import { VoteButtons } from "./vote-buttons";
 import { Card } from "@/components/ui/card";
 import { formatRelativeTime } from "@/lib/utils";
 
+// Allowed domains for image/link URLs to prevent SSRF and content injection
+const ALLOWED_IMAGE_DOMAINS = [
+  "imgur.com",
+  "i.imgur.com",
+  "github.com",
+  "raw.githubusercontent.com",
+  "cdn.discordapp.com",
+  "media.discordapp.net",
+  "pbs.twimg.com",
+  "avatars.githubusercontent.com",
+  "images.unsplash.com",
+];
+
+function isUrlAllowed(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    // Only allow https
+    if (parsed.protocol !== "https:") return false;
+    // Check against allowed domains
+    return ALLOWED_IMAGE_DOMAINS.some(
+      (domain) => parsed.hostname === domain || parsed.hostname.endsWith(`.${domain}`)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeUrl(url: string): string | null {
+  if (!isUrlAllowed(url)) return null;
+  return url;
+}
+
 interface PostCardProps {
   post: {
     id: string;
@@ -113,15 +145,27 @@ export function PostCard({ post, fullView = false }: PostCardProps) {
           )}
 
           {/* Image */}
-          {post.type === "image" && post.url && (
-            <div className="mt-2">
-              <img
-                src={post.url}
-                alt={post.title}
-                className="max-h-96 rounded-lg object-cover"
-              />
-            </div>
-          )}
+          {post.type === "image" && post.url && (() => {
+            const safeUrl = sanitizeUrl(post.url);
+            if (!safeUrl) {
+              return (
+                <div className="mt-2 p-3 bg-surface-secondary rounded-lg border border-border text-text-secondary text-sm">
+                  Image from untrusted domain
+                </div>
+              );
+            }
+            return (
+              <div className="mt-2">
+                <img
+                  src={safeUrl}
+                  alt={post.title}
+                  className="max-h-96 rounded-lg object-cover"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            );
+          })()}
 
           {/* Actions */}
           <div className="flex items-center gap-4 mt-3 text-xs text-text-secondary">

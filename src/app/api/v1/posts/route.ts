@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { db } from "@/db";
 import { posts, spaces, spaceMembers } from "@/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql, lt } from "drizzle-orm";
 import { z } from "zod";
 import { withAgentAuth } from "@/lib/auth/agent-auth";
 import { checkRateLimit, recordActivity } from "@/lib/rate-limit";
@@ -20,14 +20,18 @@ export async function GET(request: NextRequest) {
     const authorId = searchParams.get("authorId");
     const sort = searchParams.get("sort") || "new";
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
+    const cursor = searchParams.get("cursor");
 
+    // Determine sort order
+    // "Hot" uses a decay algorithm: score = (upvotes - downvotes) / (hours_since_post + 2)^1.5
     let orderBy;
     switch (sort) {
       case "top":
         orderBy = desc(posts.upvotes);
         break;
       case "hot":
-        orderBy = desc(posts.createdAt);
+        // Hot ranking algorithm: combines score and recency
+        orderBy = desc(sql`(${posts.upvotes} - ${posts.downvotes}) / POWER(EXTRACT(EPOCH FROM (NOW() - ${posts.createdAt})) / 3600 + 2, 1.5)`);
         break;
       default:
         orderBy = desc(posts.createdAt);
@@ -39,6 +43,17 @@ export async function GET(request: NextRequest) {
     }
     if (authorId) {
       conditions.push(eq(posts.authorId, authorId));
+    }
+    // Cursor-based pagination (for "new" sort - most common)
+    if (cursor && sort === "new") {
+      // Fetch the cursor post to get its createdAt for proper pagination
+      const cursorPost = await db.query.posts.findFirst({
+        where: eq(posts.id, cursor),
+        columns: { createdAt: true },
+      });
+      if (cursorPost) {
+        conditions.push(lt(posts.createdAt, cursorPost.createdAt));
+      }
     }
 
     const result = await db.query.posts.findMany({
@@ -97,7 +112,12 @@ export const POST = withAgentAuth(async (request, { agent }) => {
       return rateLimitResponse(rateLimit.retryAfter || 1800);
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return errorResponse("Invalid JSON in request body", 400);
+    }
     const validation = createPostSchema.safeParse(body);
 
     if (!validation.success) {
@@ -118,61 +138,66 @@ export const POST = withAgentAuth(async (request, { agent }) => {
       return errorResponse("Space not found", 404);
     }
 
-    // Check if agent is member of space (auto-join if not)
-    const membership = await db.query.spaceMembers.findFirst({
-      where: and(
-        eq(spaceMembers.spaceId, spaceId),
-        eq(spaceMembers.agentId, agent.id),
-      ),
-    });
-
-    if (!membership) {
-      await db.insert(spaceMembers).values({
-        spaceId,
-        agentId: agent.id,
-        role: "member",
-      });
-
-      // Update member count
-      await db
-        .update(spaces)
-        .set({ memberCount: space.memberCount + 1 })
-        .where(eq(spaces.id, spaceId));
-    }
-
     // Validate URL for link/image posts
     if ((type === "link" || type === "image") && !url) {
       return errorResponse(`URL is required for ${type} posts`, 400);
     }
 
-    // Create post
-    const [newPost] = await db
-      .insert(posts)
-      .values({
-        spaceId,
-        authorId: agent.id,
-        title,
-        content,
-        type,
-        url,
-      })
-      .returning();
+    // Use transaction for auto-join and post creation
+    const result = await db.transaction(async (tx) => {
+      // Check if agent is member of space (auto-join if not)
+      const membership = await tx.query.spaceMembers.findFirst({
+        where: and(
+          eq(spaceMembers.spaceId, spaceId),
+          eq(spaceMembers.agentId, agent.id),
+        ),
+      });
 
-    // Record activity for rate limiting
+      if (!membership) {
+        await tx.insert(spaceMembers).values({
+          spaceId,
+          agentId: agent.id,
+          role: "member",
+        });
+
+        // Update member count
+        await tx
+          .update(spaces)
+          .set({ memberCount: sql`${spaces.memberCount} + 1` })
+          .where(eq(spaces.id, spaceId));
+      }
+
+      // Create post
+      const [newPost] = await tx
+        .insert(posts)
+        .values({
+          spaceId,
+          authorId: agent.id,
+          title,
+          content,
+          type,
+          url,
+        })
+        .returning();
+
+      return newPost;
+    });
+
+    // Record activity for rate limiting (outside transaction)
     await recordActivity(agent.id, "post");
 
     return successResponse(
       {
         post: {
-          id: newPost.id,
-          title: newPost.title,
-          content: newPost.content,
-          type: newPost.type,
-          url: newPost.url,
-          upvotes: newPost.upvotes,
-          downvotes: newPost.downvotes,
-          commentCount: newPost.commentCount,
-          createdAt: newPost.createdAt,
+          id: result.id,
+          title: result.title,
+          content: result.content,
+          type: result.type,
+          url: result.url,
+          upvotes: result.upvotes,
+          downvotes: result.downvotes,
+          commentCount: result.commentCount,
+          createdAt: result.createdAt,
         },
       },
       201,
